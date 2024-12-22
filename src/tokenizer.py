@@ -93,7 +93,7 @@ class Tokenizer:
         res = []
         for i in range(len(content)):
             if content[i][0] == '"':
-                res.append("<stringConst>" + content[i][1:] + "</stringConst>")
+                res.append("<stringConst>" + content[i] + "</stringConst>")
             else:
                 res.append(content[i])
 
@@ -123,3 +123,33 @@ class Tokenizer:
         else:
             print("Invalid token ---------------------------------")
             exit()
+
+    def keyword(self,token):
+        token = token[9:]
+        token = token[:-10]
+
+        return token.upper()
+
+    def symbol(self,token):
+        token = token[8:]
+        token = token[:-9]
+
+        return token
+
+    def identifier(self,token):
+        token = token[12:]
+        token = token[:-13]
+
+        return token
+
+    def intVal(self,token):
+        token = token[10:]
+        token = token[:-11]
+
+        return int(token)
+
+    def stringVal(self,token):
+        token = token[14:]
+        token = token[:-15]
+
+        return token

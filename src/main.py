@@ -18,6 +18,4 @@ with open('D:/PythonProjects/jack-compiler/data/tokens.xml', 'w') as file:
         file.write('\n')
     file.write('</tokens>')
 
-
-
-
+print(tokenizer1.symbol('<symbol>=</symbol>'))
