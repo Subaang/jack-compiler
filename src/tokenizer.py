@@ -1,61 +1,63 @@
-from itertools import filterfalse
-
-
 class Tokenizer:
     def __init__(self):
-        self.keywordList = ['class', 'constructor','function','method','field','static','var', 'int', 'char', 'boolean',
+        self.tokenizedXML = []
+        self.keywordList = ['class', 'constructor', 'function', 'method', 'field', 'static', 'var', 'int', 'char',
+                            'boolean',
                             'void', 'true', 'false', 'null', 'this', 'let', 'do', 'if', 'else', 'while', 'return']
-        self.symbolList = ['{','}','(',')','[',']','.',',','+','-','*','/','&','|','<','>','=',"~",';']
+        self.symbolList = ['{', '}', '(', ')', '[', ']', '.', ',', '+', '-', '*', '/', '&', '|', '<', '>', '=', "~",
+                           ';']
 
-    def preXMLTokenization(self,content):
-        pre_res = []
-        for i in content:
-            pre_res += i.split(" ")
+    def tokenize(self,content):
+        preXMLTokens = self.preXMLTokenization(content)
+        symbolAndKeywordTokens = self.symbolAndKeywordTokenization(preXMLTokens)
+        intTokens = self.intConstTokenization(symbolAndKeywordTokens)
+        stringTokens = self.stringConstTokenization(intTokens)
+        identifierTokens = self.identifierTokenization(stringTokens)
 
-        for i in range(len(pre_res)):
-            temp = []
-            word = ""
-            for j in pre_res[i]:
-                if j in self.symbolList:
-                    if word != "":
-                        temp.append(word)
-                        word = ""
+        self.tokenizedXML = identifierTokens.copy()
+        return self.tokenizedXML
 
-                    temp.append(j)
-                else:
-                    word += j
-            if word != "":
-                temp.append(word)
-
-            pre_res[i] = temp
-
-        pre_res = [j for sub in pre_res for j in sub]
-
+    def preXMLTokenization(self, content):
         res = []
-        i = 0
-        while i < len(pre_res):
-            if pre_res[i][0] == '"':
-                temp = ""
-                temp += pre_res[i]
-                temp += " "
-                i += 1
-                while pre_res[i][0] != '"':
-                    temp += pre_res[i]
-                    temp += " "
-                    i += 1
+        buffer = ""
+        for i in content:
+            for j in i:
+                # handling string constants
+                if buffer.count('"') > 0:
+                    buffer += j
+                    if buffer.count('"') == 2:
+                        res.append(buffer)
+                        buffer = ""
+                        continue
+                    continue
 
-                if temp == "":
-                    res.append(temp)
-                else:
-                    res.append(temp)
 
-            else:
-                res.append(pre_res[i])
+                #if buffer is empty, no need to fill it with white space
+                if buffer == "" and j == " ":
+                    continue
 
-            i += 1
+                #if j is a symbol and buffer is empty, no need to fill buffer, just push j
+                if j in self.symbolList and buffer == "":
+                    res.append(j)
+                    continue
+
+                buffer += j
+
+                #if buffer isn't empty and j is a symbol or white space(handles keywords, integers and identifiers)
+                if buffer != "" and j in self.symbolList:
+                    res.append(buffer[:-1])
+                    res.append(j)
+                    buffer = ""
+                    continue
+
+                if buffer != "" and j == " ":
+                    res.append(buffer[:-1])
+                    buffer = ""
+                    continue
+
         return res
 
-    def symbolAndKeywordTokenization(self,content):
+    def symbolAndKeywordTokenization(self, content):
         res = []
         for i in range(len(content)):
             if content[i] in self.keywordList:
@@ -63,14 +65,11 @@ class Tokenizer:
 
             elif content[i] in self.symbolList:
                 if content[i] == '<':
-                    res.append(f"<symbol>&lt;</symbol>")
+                    res.append("<symbol>&lt;</symbol>")
                 elif content[i] == '>':
-                    res.append(f"<symbol>&gt;</symbol>")
-                elif content[i] == '"':
-                    res.append(f"<symbol>&quot;</symbol>")
-                    print("CHECK THIS. HOW DID THIS HAPPEN -----------------------------------------")
+                    res.append("<symbol>&gt;</symbol>")
                 elif content[i] == '&':
-                    res.append(f"<symbol>&amp;</symbol>")
+                    res.append("<symbol>&amp;</symbol>")
                 else:
                     res.append(f"<symbol>{content[i]}</symbol>")
 
@@ -79,7 +78,7 @@ class Tokenizer:
 
         return res
 
-    def intConstTokenization(self,content):
+    def intConstTokenization(self, content):
         res = []
         for i in range(len(content)):
             try:
@@ -90,7 +89,7 @@ class Tokenizer:
 
         return res
 
-    def stringConstTokenization(self,content):
+    def stringConstTokenization(self, content):
         res = []
         for i in range(len(content)):
             if content[i][0] == '"':
@@ -100,7 +99,7 @@ class Tokenizer:
 
         return res
 
-    def identifierTokenization(self,content):
+    def identifierTokenization(self, content):
         res = []
         for i in range(len(content)):
             if content[i][0].isalpha() or content[i][0].isalpha():
@@ -110,11 +109,17 @@ class Tokenizer:
 
         return res
 
-    def verifyXML(self,content):
-        for i in content:
-            if i[0] != "<":
-                return False
-
-        return True
-
-
+    def tokenType(self, token):
+        if "<keyword>" in token:
+            return "KEYWORD"
+        elif "<symbol>" in token:
+            return "SYMBOL"
+        elif "<identifier>" in token:
+            return "IDENTIFIER"
+        elif "<intConst>" in token:
+            return "INT_CONST"
+        elif "<stringConst>" in token:
+            return "STRING_CONST"
+        else:
+            print("Invalid token ---------------------------------")
+            exit()
