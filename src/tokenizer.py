@@ -1,5 +1,57 @@
+def tokenType(token):
+    if "<keyword>" in token:
+        return "KEYWORD"
+    elif "<symbol>" in token:
+        return "SYMBOL"
+    elif "<identifier>" in token:
+        return "IDENTIFIER"
+    elif "<intConst>" in token:
+        return "INT_CONST"
+    elif "<stringConst>" in token:
+        return "STRING_CONST"
+    else:
+        print("Invalid token ---------------------------------")
+        exit()
+
+
+def keyword(token):
+    token = token[9:]
+    token = token[:-10]
+
+    return token
+
+
+def symbol(token):
+    token = token[8:]
+    token = token[:-9]
+
+    return token
+
+
+def identifier(token):
+    token = token[12:]
+    token = token[:-13]
+
+    return token
+
+
+def intVal(token):
+    token = token[10:]
+    token = token[:-11]
+
+    return int(token)
+
+
+def stringVal(token):
+    token = token[14:]
+    token = token[:-15]
+
+    return token
+
+
 class Tokenizer:
-    def __init__(self):
+    def __init__(self,content):
+        self.content = content
         self.tokenizedXML = []
         self.keywordList = ['class', 'constructor', 'function', 'method', 'field', 'static', 'var', 'int', 'char',
                             'boolean',
@@ -7,8 +59,8 @@ class Tokenizer:
         self.symbolList = ['{', '}', '(', ')', '[', ']', '.', ',', '+', '-', '*', '/', '&', '|', '<', '>', '=', "~",
                            ';']
 
-    def tokenize(self,content):
-        preXMLTokens = self.preXMLTokenization(content)
+    def tokenize(self):
+        preXMLTokens = self.preXMLTokenization(self.content)
         symbolAndKeywordTokens = self.symbolAndKeywordTokenization(preXMLTokens)
         intTokens = self.intConstTokenization(symbolAndKeywordTokens)
         stringTokens = self.stringConstTokenization(intTokens)
@@ -109,47 +161,3 @@ class Tokenizer:
 
         return res
 
-    def tokenType(self, token):
-        if "<keyword>" in token:
-            return "KEYWORD"
-        elif "<symbol>" in token:
-            return "SYMBOL"
-        elif "<identifier>" in token:
-            return "IDENTIFIER"
-        elif "<intConst>" in token:
-            return "INT_CONST"
-        elif "<stringConst>" in token:
-            return "STRING_CONST"
-        else:
-            print("Invalid token ---------------------------------")
-            exit()
-
-    def keyword(self,token):
-        token = token[9:]
-        token = token[:-10]
-
-        return token.upper()
-
-    def symbol(self,token):
-        token = token[8:]
-        token = token[:-9]
-
-        return token
-
-    def identifier(self,token):
-        token = token[12:]
-        token = token[:-13]
-
-        return token
-
-    def intVal(self,token):
-        token = token[10:]
-        token = token[:-11]
-
-        return int(token)
-
-    def stringVal(self,token):
-        token = token[14:]
-        token = token[:-15]
-
-        return token

@@ -8,8 +8,8 @@ content = [x.strip(" \n\t") for x in content]
 content = [x for x in content if x != '']
 content = [x for x in content if (x[0] != "/" and x[0] != "\n")]
 
-tokenizer1 = tokenizer.Tokenizer()
-tokenizedXML = tokenizer1.tokenize(content)
+tokenizer1 = tokenizer.Tokenizer(content)
+tokenizedXML = tokenizer1.tokenize()
 
 with open('D:/PythonProjects/jack-compiler/data/tokens.xml', 'w') as file:
     file.write('<tokens>\n')
@@ -18,4 +18,11 @@ with open('D:/PythonProjects/jack-compiler/data/tokens.xml', 'w') as file:
         file.write('\n')
     file.write('</tokens>')
 
-print(tokenizer1.symbol('<symbol>=</symbol>'))
+compiler1 = compiler.CompilationEngine(tokenizedXML)
+
+with open('D:/PythonProjects/jack-compiler/data/compiled.xml', 'w') as file:
+    file.write('<tokens>\n')
+    for i in compiler1.compiled:
+        file.write(i)
+        file.write('\n')
+    file.write('</tokens>')
