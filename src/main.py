@@ -1,7 +1,7 @@
 import tokenizer
 import compiler
 
-with open('D:/PythonProjects/jack-compiler/data/test.jack', 'r') as file:
+with open('D:/PythonProjects/jack-compiler/data/program.jack', 'r') as file:
     content = file.readlines()
 
 for i in range(len(content)): #Removes inline comments
@@ -27,8 +27,6 @@ with open('D:/PythonProjects/jack-compiler/data/tokens.xml', 'w') as file:
 compiler1 = compiler.CompilationEngine(tokenizedXML)
 
 with open('D:/PythonProjects/jack-compiler/data/compiled.xml', 'w') as file:
-    file.write('<tokens>\n')
     for i in compiler1.compiled:
         file.write(i)
         file.write('\n')
-    file.write('</tokens>')

@@ -5,9 +5,9 @@ def tokenType(token):
         return "SYMBOL"
     elif "<identifier>" in token:
         return "IDENTIFIER"
-    elif "<intConst>" in token:
+    elif "<integerConstant>" in token:
         return "INT_CONST"
-    elif "<stringConst>" in token:
+    elif "<stringConstant>" in token:
         return "STRING_CONST"
     else:
         print("Invalid token ---------------------------------")
@@ -25,6 +25,13 @@ def symbol(token):
     token = token[8:]
     token = token[:-9]
 
+    if token == '&lt;':
+        token = "<"
+    elif token == '&gt;':
+        token = ">"
+    elif token == '&amp;':
+        token = "&"
+
     return token
 
 
@@ -36,15 +43,15 @@ def identifier(token):
 
 
 def intVal(token):
-    token = token[10:]
-    token = token[:-11]
+    token = token[17:]
+    token = token[:-18]
 
     return int(token)
 
 
 def stringVal(token):
-    token = token[14:]
-    token = token[:-15]
+    token = token[17:]
+    token = token[:-18]
 
     return token
 
@@ -135,7 +142,7 @@ class Tokenizer:
         for i in range(len(content)):
             try:
                 int(content[i])
-                res.append("<intConst>" + content[i] + "</intConst>")
+                res.append("<integerConstant>" + content[i] + "</integerConstant>")
             except ValueError:
                 res.append(content[i])
 
@@ -145,7 +152,7 @@ class Tokenizer:
         res = []
         for i in range(len(content)):
             if content[i][0] == '"':
-                res.append("<stringConst>" + content[i] + "</stringConst>")
+                res.append("<stringConstant>" + content[i] + "</stringConstant>")
             else:
                 res.append(content[i])
 

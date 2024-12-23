@@ -36,8 +36,11 @@ class CompilationEngine:
                 error()
 
         elif tokenType == "STRING_CONST":
-            if tokenizer.stringVal(token)[0] != terminal_list:
+            if terminal_list[0] != "STRING_CONST":
                 error()
+            else:
+                token = tokenizer.stringVal(token)
+                token = '<stringConstant>' + token.strip() + '</stringConstant>'
 
         self.compiled.append(token)
         self.i += 1
@@ -86,27 +89,19 @@ class CompilationEngine:
         self.eat(["constructor","function","method"])
         self.eat(self.typeList + ["void"])
         self.eat(["IDENTIFIER"])
-        self.eat("(")
+        self.eat(["("])
 
-        while True:
+        self.compileParameterList()
 
-            if tokenizer.tokenType(self.tokens[self.i]) == "SYMBOL" and tokenizer.symbol(self.tokens[self.i]) == ")":
-                break
 
-            self.eat(["IDENTIFIER"])
 
-            if tokenizer.tokenType(self.tokens[self.i]) == "SYMBOL" and tokenizer.symbol(self.tokens[self.i]) == ")":
-                break
-
-            self.eat([","])
-
-        self.eat(")")
+        self.eat([")"])
         self.compileSubroutineBody()
         self.compiled.append("</subroutineDec>")
 
     def compileSubroutineBody(self):
         self.compiled.append("<subroutineBody>")
-        self.eat("{")
+        self.eat(["{"])
 
         # These 2 can come in any order multiple times or not appear at all
         while True:
@@ -124,7 +119,7 @@ class CompilationEngine:
             if tokenizer.tokenType(self.tokens[self.i]) not in ["SYMBOL","KEYWORD"]:
                 error()
 
-        self.eat("}")
+        self.eat(["}"])
         self.compiled.append("</subroutineBody>")
 
     def compileVarDec(self):
@@ -168,24 +163,23 @@ class CompilationEngine:
 
         if tokenizer.tokenType(self.tokens[self.i]) == "SYMBOL" and tokenizer.symbol(self.tokens[self.i]) == "=":
             self.eat(["="])
-            #self.compileExpression()
+            self.compileExpression()
         else:
             self.eat(["["])
-            # self.compileExpression()
+            self.compileExpression()
             self.eat(["]"])
             self.eat(["="])
-            # self.compileExpression()
+            self.compileExpression()
 
-        self.eat(";")
+        self.eat([";"])
         self.compiled.append("</letStatement>")
 
     def compileIf(self):
         self.compiled.append("<ifStatement>")
 
         self.eat(["if"])
-        self.eat(["IDENTIFIER"])
         self.eat(["("])
-        #self.compileExpression()
+        self.compileExpression()
         self.eat([")"])
         self.eat(["{"])
         self.compileStatements()
@@ -205,9 +199,8 @@ class CompilationEngine:
         self.compiled.append("<whileStatement>")
 
         self.eat(["while"])
-        self.eat(["IDENTIFIER"])
         self.eat(["("])
-        # self.compileExpression()
+        self.compileExpression()
         self.eat([")"])
         self.eat(["{"])
         self.compileStatements()
@@ -219,7 +212,22 @@ class CompilationEngine:
         self.compiled.append("<doStatement>")
 
         self.eat(["do"])
-        self.compileSubroutineDec()
+        self.eat(["IDENTIFIER"])
+        if tokenizer.tokenType(self.tokens[self.i]) == "SYMBOL":
+            if tokenizer.symbol(self.tokens[self.i]) == "(":
+                self.eat(["("])
+                self.compileExpressionList()
+                self.eat([")"])
+            elif tokenizer.symbol(self.tokens[self.i]) == ".":
+                self.eat(["."])
+                self.eat(["IDENTIFIER"])
+                self.eat(["("])
+                self.compileExpressionList()
+                self.eat([")"])
+            else:
+                error()
+        else:
+            error()
         self.eat([";"])
 
         self.compiled.append("</doStatement>")
@@ -233,11 +241,98 @@ class CompilationEngine:
             pass
         else:
             pass
-            #self.compileExpression()
+            self.compileExpression()
 
         self.eat([";"])
 
         self.compiled.append("</returnStatement>")
+
+    def compileExpression(self):
+        self.compiled.append("<expression>")
+        self.compileTerm()
+        self.compiled.append("</expression>")
+        pass
+
+    def compileParameterList(self):
+        self.compiled.append("<parameterList>")
+        while True:
+            if tokenizer.tokenType(self.tokens[self.i]) == "SYMBOL" and tokenizer.symbol(self.tokens[self.i]) == ")":
+                break
+
+            self.eat(["IDENTIFIER"])
+
+            if tokenizer.tokenType(self.tokens[self.i]) == "SYMBOL" and tokenizer.symbol(self.tokens[self.i]) == ")":
+                break
+
+            self.eat([","])
+        self.compiled.append("</parameterList>")
+
+    def compileTerm(self):
+        self.compiled.append("<term>")
+        if tokenizer.tokenType(self.tokens[self.i]) == "INT_CONST":
+            self.eat(["INT_CONST"])
+
+
+        elif tokenizer.tokenType(self.tokens[self.i]) == "STRING_CONST":
+            self.eat(["STRING_CONST"])
+
+
+        elif tokenizer.tokenType(self.tokens[self.i]) == "KEYWORD":
+            if tokenizer.keyword(self.tokens[self.i]) not in ['true','false','null','this']:
+                exit()
+            else:
+                self.eat(["STRING_CONST"])
+
+
+        elif tokenizer.tokenType(self.tokens[self.i]) == "IDENTIFIER":
+            self.eat(["IDENTIFIER"])
+            if tokenizer.tokenType(self.tokens[self.i]) == "SYMBOL":
+                if tokenizer.symbol(self.tokens[self.i + 1]) == "(":
+                    self.eat(["("])
+                    self.compileExpressionList()
+                    self.eat([")"])
+                elif tokenizer.symbol(self.tokens[self.i]) == "[":
+                    self.eat(["["])
+                    self.compileExpression()
+                    self.eat(["]"])
+                elif tokenizer.symbol(self.tokens[self.i]) == ".":
+                    self.eat(["."])
+                    self.eat(["IDENTIFIER"])
+                    self.eat(["("])
+                    self.compileExpressionList()
+                    self.eat([")"])
+
+
+        elif tokenizer.tokenType(self.tokens[self.i]) == "SYMBOL" and tokenizer.symbol(self.tokens[self.i]) == "(":
+            self.eat(["("])
+            self.compileExpression()
+            self.eat([")"])
+
+        elif tokenizer.tokenType(self.tokens[self.i]) == "SYMBOL":
+                self.eat(tokenizer.symbol(self.tokens[self.i]))
+                self.compileTerm()
+
+        self.compiled.append("</term>")
+
+        if tokenizer.tokenType(self.tokens[self.i]) == "SYMBOL" and tokenizer.symbol(self.tokens[self.i]) in ["+","-","*","/","&","|","<",">","="]:
+            self.eat(tokenizer.symbol(self.tokens[self.i]))
+            self.compileTerm()
+
+    def compileExpressionList(self):
+        self.compiled.append("<expressionList>")
+        while True:
+            if tokenizer.tokenType(self.tokens[self.i]) == "SYMBOL" and tokenizer.symbol(self.tokens[self.i]) == ")":
+                break
+
+            self.compileExpression()
+
+            if tokenizer.tokenType(self.tokens[self.i]) == "SYMBOL" and tokenizer.symbol(self.tokens[self.i]) == ")":
+                break
+
+            self.eat([","])
+        self.compiled.append("</expressionList>")
+
+
 
 
 
