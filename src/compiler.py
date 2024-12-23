@@ -93,8 +93,6 @@ class CompilationEngine:
 
         self.compileParameterList()
 
-
-
         self.eat([")"])
         self.compileSubroutineBody()
         self.compiled.append("</subroutineDec>")
@@ -185,9 +183,7 @@ class CompilationEngine:
         self.compileStatements()
         self.eat(["}"])
 
-        if tokenizer.tokenType(self.tokens[self.i]) == "SYMBOL" and tokenizer.symbol(self.tokens[self.i]) == ";":
-           pass
-        else:
+        if tokenizer.tokenType(self.tokens[self.i]) == "KEYWORD" and tokenizer.keyword(self.tokens[self.i]) == "else":
             self.eat(["else"])
             self.eat(["{"])
             self.compileStatements()
@@ -259,6 +255,7 @@ class CompilationEngine:
             if tokenizer.tokenType(self.tokens[self.i]) == "SYMBOL" and tokenizer.symbol(self.tokens[self.i]) == ")":
                 break
 
+            self.eat(self.typeList)
             self.eat(["IDENTIFIER"])
 
             if tokenizer.tokenType(self.tokens[self.i]) == "SYMBOL" and tokenizer.symbol(self.tokens[self.i]) == ")":
@@ -281,7 +278,7 @@ class CompilationEngine:
             if tokenizer.keyword(self.tokens[self.i]) not in ['true','false','null','this']:
                 exit()
             else:
-                self.eat(["STRING_CONST"])
+                self.eat(tokenizer.keyword(self.tokens[self.i]))
 
 
         elif tokenizer.tokenType(self.tokens[self.i]) == "IDENTIFIER":
