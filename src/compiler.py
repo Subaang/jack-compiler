@@ -1,7 +1,5 @@
 import tokenizer
 
-
-
 def error():
     print("ERROR")
     exit()
@@ -9,7 +7,7 @@ def error():
 
 class CompilationEngine:
     def __init__(self,tokens):
-        self.typeList = ["int", "char", "boolean","className"]
+        self.typeList = ["IDENTIFIER","int", "char", "boolean"]
         self.tokens = tokens
         self.compiled = []
         self.i = 0
@@ -20,9 +18,14 @@ class CompilationEngine:
         token = self.tokens[self.i]
         tokenType = tokenizer.tokenType(token)
 
+
         if tokenType == "KEYWORD":
             if tokenizer.keyword(token) not in terminal_list:
                error()
+
+        elif tokenType == "IDENTIFIER":
+            if terminal_list[0] != "IDENTIFIER":
+                error()
 
         elif tokenType == "SYMBOL":
             if tokenizer.symbol(token) not in terminal_list:
@@ -36,10 +39,6 @@ class CompilationEngine:
             if tokenizer.stringVal(token)[0] != terminal_list:
                 error()
 
-        elif tokenType == "IDENTIFIER":
-            if terminal_list[0] != "IDENTIFIER":
-                error()
-
         self.compiled.append(token)
         self.i += 1
 
@@ -48,8 +47,19 @@ class CompilationEngine:
         self.eat(["class"])
         self.eat(["IDENTIFIER"])
         self.eat(["{"])
-        self.compileClassVarDec()
-        #self.compileSubroutineDec()
+
+        #These 2 can come in any order multiple times
+        while True:
+            if tokenizer.tokenType(self.tokens[self.i]) == "SYMBOL" and tokenizer.symbol(self.tokens[self.i]) == "}":
+                break
+
+            self.compileClassVarDec()
+
+            if tokenizer.tokenType(self.tokens[self.i]) == "SYMBOL" and tokenizer.symbol(self.tokens[self.i]) == "}":
+                break
+
+            self.compileSubroutineDec()
+
         self.eat(["}"])
         self.compiled.append("</class>")
 
@@ -68,7 +78,31 @@ class CompilationEngine:
             self.compiled.append("</classVarDec>")
 
     def compileSubroutineDec(self):
+        self.compiled.append("<subroutineDec>")
         self.eat(["constructor","function","method"])
+        self.eat(self.typeList + ["void"])
+        self.eat(["IDENTIFIER"])
+        self.eat("(")
+
+        while True:
+
+            if tokenizer.tokenType(self.tokens[self.i]) == "SYMBOL" and tokenizer.symbol(self.tokens[self.i]) == ")":
+                break
+
+            self.eat(["IDENTIFIER"])
+
+            if tokenizer.tokenType(self.tokens[self.i]) == "SYMBOL" and tokenizer.symbol(self.tokens[self.i]) == ")":
+                break
+
+            self.eat([","])
+
+        self.eat(")")
+        self.eat("{")
+        #self.compileSubroutineBody()
+        self.eat("}")
+        self.compiled.append("</subroutineDec>")
+
+
 
 
 

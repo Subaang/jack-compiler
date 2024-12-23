@@ -1,4 +1,15 @@
+
 class Main {
-    field int a,b;
-    static int c,d;
-}
+    static boolean test;
+
+    function void main() {
+
+    }
+
+    function void main() {
+
+    }
+
+    static int test1;
+
+    }
