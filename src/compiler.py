@@ -189,10 +189,10 @@ class CompilationEngine:
             self.compileStatements()
             self.eat(["}"])
 
-        self.compiled.append("</ifStatement>")
+        self.compiled.append("</ifStatement> ")
 
     def compileWhile(self):
-        self.compiled.append("<whileStatement>")
+        self.compiled.append("<whileStatement> ")
 
         self.eat(["while"])
         self.eat(["("])
@@ -284,7 +284,7 @@ class CompilationEngine:
         elif tokenizer.tokenType(self.tokens[self.i]) == "IDENTIFIER":
             self.eat(["IDENTIFIER"])
             if tokenizer.tokenType(self.tokens[self.i]) == "SYMBOL":
-                if tokenizer.symbol(self.tokens[self.i + 1]) == "(":
+                if tokenizer.symbol(self.tokens[self.i]) == "(":
                     self.eat(["("])
                     self.compileExpressionList()
                     self.eat([")"])
